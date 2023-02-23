@@ -61,7 +61,6 @@ typings/
 # gradle
 .gradletasknamecache
 .gradle/
-build/
 bin/
 
 
