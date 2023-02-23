@@ -1,6 +1,7 @@
 {
   "name": "mapdemo",
   "version": "0.1.0",
+  "homepage": "http://coleava.github.io/geoGaoDe/",
   "private": true,
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
