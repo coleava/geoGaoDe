@@ -1,0 +1,12 @@
+#container{
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+}
+
+.map-input {
+    width: 30%;
+    position: absolute;
+    left: 30px;
+    top: 30px;
+}
