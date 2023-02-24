@@ -1,7 +1,7 @@
 import React from 'react'
 import './MapContainer.css'
 import AMapLoader from '@amap/amap-jsapi-loader'
-import { Input, List, Tag, Tooltip } from 'antd'
+import { Input, List, Tag } from 'antd'
 
 class MapComponent extends React.Component {
   constructor(props) {
@@ -79,7 +79,6 @@ class MapComponent extends React.Component {
     }
     var MSearch = new this.AMap.PlaceSearch(PlaceSearchOptions) //构造PlaceSearch类
     MSearch.search('希尔顿酒店', (status, result) => {
-      console.log(result)
       this.map.plugin('AMap.Geocoder', () => {
         result.cityList.map((city) => {
           let geocoder = new this.AMap.Geocoder({
@@ -133,7 +132,6 @@ class MapComponent extends React.Component {
       extensions: 'base',
     }).search('希尔顿酒店', (status, result) => {
       // 搜索成功时，result即是对应的匹配数据
-      console.log(result)
       let { pois } = result.poiList
       this.setState({ list: pois }, () => {
         pois.forEach((poi) => {
