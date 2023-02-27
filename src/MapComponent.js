@@ -193,7 +193,7 @@ class MapComponent extends React.Component {
         {/* <Input.Search className="map-input" onSearch={(val) => this.search(val)} /> */}
 
         {this.state.showDetail ? (
-          <Card style={{ height: 'calc(100% - 35vh)' }}>
+          <Card style={{ height: 'calc(100% - 35vh)', overflowY: 'auto' }}>
             <div style={{ position: 'relative' }}>
               <img src="https://store.is.autonavi.com/showpic/2f22def110d066018c9386c0700e7fdf" width="100%" height={300} />
               <Button type="primary" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#fff', position: 'absolute', top: 20, left: 20 }} onClick={() => this.backList()}>
