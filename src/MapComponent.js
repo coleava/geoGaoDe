@@ -1,14 +1,18 @@
 import React from 'react'
 import './MapContainer.css'
 import AMapLoader from '@amap/amap-jsapi-loader'
-import { Input, List, Tag } from 'antd'
+import { Card, Input, List, Row, Tag, Rate, Button } from 'antd'
+import { ArrowLeftOutlined } from '@ant-design/icons'
+import list from './data'
 
+const { Meta } = Card
 class MapComponent extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
       list: [],
-      selectTarget: {},
+      showDetail: false,
+      selectLocation: null,
     }
     this.map = {}
     this.AMap = null
@@ -45,23 +49,6 @@ class MapComponent extends React.Component {
         // var points = [
         //   { lng: 121.596718, lat: 31.236351, count: 10 },
         // ]
-
-        // 加载热力图插件
-        // this.map.plugin(['AMap.HeatMap'], () => {
-        //   // 在地图对象叠加热力图
-        //   heatmap = new AMap.HeatMap(this.map, {
-        //     radius: 50, //给定半径
-        //     opacity: [0.4, 0.8],
-        //     gradient: {
-        //       0.3: 'blue',
-        //       0.5: 'green',
-        //       0.7: 'yellow',
-        //       0.9: 'red',
-        //     },
-        //   })
-        //   // 设置热力图数据集
-        //   heatmap.setDataSet({ data: points, max: 100 })
-        // })
       })
       .catch((e) => {
         console.log(e)
@@ -122,9 +109,6 @@ class MapComponent extends React.Component {
   }
 
   viewTarget = (data, center) => {
-    let { list } = this.state
-
-    // console.log(data,this)
     new this.AMap.PlaceSearch({
       city: data.name,
       pageSize: 999, //每页结果数,默认10
@@ -138,23 +122,23 @@ class MapComponent extends React.Component {
           let marker = new this.AMap.Marker({
             position: [poi.location.lng, poi.location.lat], // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
             title: poi.name,
-            icon: 'https://webapi.amap.com/theme/v1.3/markers/b/mark_bs.png',
+            icon: require('./imgs/location-blue.png'),
           })
           marker.on('click', (e) => {
             let newList = []
             let { _opts } = e.target
+            let selectLocation = null
             pois.forEach((po) => {
               let obj = { ...po }
               if (po.name === _opts.title) {
-                obj['padding'] = 8
-                obj['border'] = '1px solid red'
+                selectLocation = po
+                obj['background'] = '#acdefa'
               } else {
-                obj['padding'] = 0
-                obj['border'] = ''
+                obj['background'] = ''
               }
               newList.push(obj)
             })
-            this.setState({ list: newList })
+            this.setState({ list: newList, showDetail: true, selectLocation })
           })
           this.markerList.push(marker)
         })
@@ -166,37 +150,23 @@ class MapComponent extends React.Component {
   }
 
   select = (item) => {
-    // if (this.marker) {
-    //   this.map.remove(this.marker)
-    // }
-    // let marker = new this.AMap.Marker({
-    //   position: [item.location.lng, item.location.lat], // 经纬度对象，也可以是经纬度构成的一维数组[116.39, 39.9]
-    //   //   title: '',
-    //   icon: 'https://webapi.amap.com/theme/v1.3/markers/b/mark_bs.png',
-    // })
-    // this.marker = marker
-    // this.map.add(marker)
-
     let { list } = this.state
     let newList = []
     list.forEach((l) => {
       let obj = { ...l }
       if (l.name === item.name) {
-        obj['padding'] = 8
-        obj['border'] = '1px solid red'
+        obj['background'] = '#acdefa'
       } else {
-        obj['padding'] = 0
-        obj['border'] = ''
+        obj['background'] = ''
       }
       newList.push(obj)
     })
-
     this.setState({ list: newList }, () => {
       this.markerList.map((marker) => {
         if (marker._opts.title == item.name) {
           marker.setIcon(require('./imgs/location-red.png'))
         } else {
-          marker.setIcon('https://webapi.amap.com/theme/v1.3/markers/b/mark_bs.png')
+          marker.setIcon(require('./imgs/location-blue.png'))
         }
 
         return marker
@@ -204,37 +174,80 @@ class MapComponent extends React.Component {
       this.map.setZoomAndCenter(13, [item.location.lng, item.location.lat], false, 1500)
     })
   }
+
+  backList = () => {
+    this.setState({ showDetail: false }, () => {
+      document.querySelector(`#${this.state.selectLocation.id}`).scrollIntoView({
+        block: 'end',
+        behavior: 'smooth',
+      })
+      this.select(this.state.selectLocation)
+    })
+  }
+
   render() {
     // 1.初始化创建地图容器,div标签作为地图容器，同时为该div指定id属性；
     return (
       <div style={{ overflowY: 'hidden', height: '100vh' }}>
-        <div id="container" className="map" style={{ height: '60vh' }}></div>
+        <div id="container" className="map" style={{ height: this.state.showDetail ? '32vh' : '60vh' }}></div>
         {/* <Input.Search className="map-input" onSearch={(val) => this.search(val)} /> */}
 
-        <List
-          style={{ margin: '0 16px', overflowY: 'auto', height: 'calc(100% - 60vh)' }}
-          itemLayout="horizontal"
-          dataSource={this.state.list}
-          renderItem={(item) => (
-            <List.Item
-              style={{ cursor: 'pointer', border: item.border || '', padding: item.padding || 0 }}
-              extra={
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                  <div>
-                    {[...new Set(item.type.split(';'))].map((tag, index) => {
-                      return <Tag key={index}>{tag}</Tag>
-                    })}
-                  </div>
-                  <div>电话： {item.tel}</div>
+        {this.state.showDetail ? (
+          <Card style={{ height: 'calc(100% - 35vh)' }}>
+            <div style={{ position: 'relative' }}>
+              <img src="https://store.is.autonavi.com/showpic/2f22def110d066018c9386c0700e7fdf" width="100%" height={300} />
+              <Button type="primary" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#fff', position: 'absolute', top: 20, left: 20 }} onClick={() => this.backList()}>
+                <ArrowLeftOutlined />
+                <p style={{ marginLeft: 8 }}>返回列表</p>
+              </Button>
+            </div>
+
+            {this.state.selectLocation && (
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 'bold' }}>{this.state.selectLocation.name}</div>
+                <div>
+                  <Rate allowHalf defaultValue={4.5} style={{ color: 'red' }} />
+                  <span style={{ marginLeft: 16 }}> 高档型</span>
                 </div>
-              }
-              onClick={() => {
-                this.select(item)
-              }}>
-              <List.Item.Meta title={<a>{item.name}</a>} description={item.address} />
-            </List.Item>
-          )}
-        />
+
+                <div style={{ padding: '16px 0', display: 'flex', alignItems: 'center' }}>
+                  <img src={require('./imgs/location-grey.png')} width="24" />
+                  <span style={{ marginLeft: 16, fontSize: 18 }}>{this.state.selectLocation.address}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <img src={require('./imgs/tel.png')} width="24" />
+                  <span style={{ marginLeft: 16, fontSize: 18 }}>{this.state.selectLocation.tel}</span>
+                </div>
+              </div>
+            )}
+          </Card>
+        ) : (
+          <List
+            style={{ margin: '0 16px', overflowY: 'auto', height: 'calc(100% - 62vh)' }}
+            itemLayout="horizontal"
+            dataSource={this.state.list}
+            renderItem={(item) => (
+              <List.Item
+                id={item.id}
+                style={{ cursor: 'pointer', background: item.background || '' }}
+                extra={
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                    <div>
+                      {[...new Set(item.type.split(';'))].map((tag, index) => {
+                        return <Tag key={index}>{tag}</Tag>
+                      })}
+                    </div>
+                    <div>电话： {item.tel}</div>
+                  </div>
+                }
+                onClick={() => {
+                  this.select(item)
+                }}>
+                <List.Item.Meta title={<a>{item.name}</a>} description={item.address} />
+              </List.Item>
+            )}
+          />
+        )}
       </div>
     )
   }

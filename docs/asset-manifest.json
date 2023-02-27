@@ -1,15 +1,12 @@
 {
   "files": {
-    "main.css": "/geoGaoDe/static/css/main.5c938956.css",
-    "main.js": "/geoGaoDe/static/js/main.6d2a0c21.js",
-    "static/js/787.dcfe4762.chunk.js": "/geoGaoDe/static/js/787.dcfe4762.chunk.js",
-    "index.html": "/geoGaoDe/index.html",
-    "main.5c938956.css.map": "/geoGaoDe/static/css/main.5c938956.css.map",
-    "main.6d2a0c21.js.map": "/geoGaoDe/static/js/main.6d2a0c21.js.map",
-    "787.dcfe4762.chunk.js.map": "/geoGaoDe/static/js/787.dcfe4762.chunk.js.map"
+    "main.css": "/geoGaoDe/static/css/main.d51acfa4.css",
+    "main.js": "/geoGaoDe/static/js/main.995dbd2c.js",
+    "static/js/27.95099497.chunk.js": "/geoGaoDe/static/js/27.95099497.chunk.js",
+    "index.html": "/geoGaoDe/index.html"
   },
   "entrypoints": [
-    "static/css/main.5c938956.css",
-    "static/js/main.6d2a0c21.js"
+    "static/css/main.d51acfa4.css",
+    "static/js/main.995dbd2c.js"
   ]
 }
