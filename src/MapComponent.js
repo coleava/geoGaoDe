@@ -1,11 +1,9 @@
 import React from 'react'
 import './MapContainer.css'
 import AMapLoader from '@amap/amap-jsapi-loader'
-import { Card, Input, List, Row, Tag, Rate, Button } from 'antd'
-import { ArrowLeftOutlined } from '@ant-design/icons'
-import list from './data'
-
-const { Meta } = Card
+import { Card, List, Tag, Rate, Button, Modal } from 'antd'
+// import cityList from './cityList'
+// import list from './data'
 class MapComponent extends React.Component {
   constructor(props) {
     super(props)
@@ -22,7 +20,7 @@ class MapComponent extends React.Component {
   // 2.dom渲染成功后进行map对象的创建
   componentDidMount() {
     AMapLoader.load({
-      key: '3a19a9a07a26368d3111b630b75db77e', // 申请好的Web端开发者Key，首次调用 load 时必填
+      key: '8e893029d763f08d6ca40b941597d6d0', // 申请好的Web端开发者Key，首次调用 load 时必填
       version: '2.0', // 指定要加载的 JSAPI 的版本，缺省时默认为 1.4.15
       plugins: ['AMap.HeatMap', 'AMap.PlaceSearch', 'AMap.Autocomplete'], // 需要使用的的插件列表，如比例尺'AMap.Scale'等
     })
@@ -66,8 +64,10 @@ class MapComponent extends React.Component {
     }
     var MSearch = new this.AMap.PlaceSearch(PlaceSearchOptions) //构造PlaceSearch类
     MSearch.search('希尔顿酒店', (status, result) => {
+        // console.log('result',result)
+      let cityList = result.cityList || []
       this.map.plugin('AMap.Geocoder', () => {
-        result.cityList.map((city) => {
+        cityList.map((city) => {
           let geocoder = new this.AMap.Geocoder({
             extensions: 'all',
             city: city.name,
@@ -113,10 +113,11 @@ class MapComponent extends React.Component {
       city: data.name,
       pageSize: 999, //每页结果数,默认10
       pageIndex: 1, //请求页码，默认1
-      extensions: 'base',
+      extensions: 'all',
     }).search('希尔顿酒店', (status, result) => {
       // 搜索成功时，result即是对应的匹配数据
       let { pois } = result.poiList
+    // console.log('pois',pois)
       this.setState({ list: pois }, () => {
         pois.forEach((poi) => {
           let marker = new this.AMap.Marker({
@@ -138,7 +139,9 @@ class MapComponent extends React.Component {
               }
               newList.push(obj)
             })
-            this.setState({ list: newList, showDetail: true, selectLocation })
+            this.setState({ list: newList, showDetail: true, selectLocation }, () => {
+              this.openModal(this.state.selectLocation)
+            })
           })
           this.markerList.push(marker)
         })
@@ -172,6 +175,7 @@ class MapComponent extends React.Component {
         return marker
       })
       this.map.setZoomAndCenter(13, [item.location.lng, item.location.lat], false, 1500)
+      this.setState({ showDetail: true, selectLocation: item })
     })
   }
 
@@ -181,7 +185,12 @@ class MapComponent extends React.Component {
         block: 'end',
         behavior: 'smooth',
       })
-      this.select(this.state.selectLocation)
+    })
+  }
+
+  openModal = (target) => {
+    this.setState({ showDetail: true, selectLocation: target }, () => {
+      this.select(target)
     })
   }
 
@@ -189,24 +198,54 @@ class MapComponent extends React.Component {
     // 1.初始化创建地图容器,div标签作为地图容器，同时为该div指定id属性；
     return (
       <div style={{ overflowY: 'hidden', height: '100vh' }}>
-        <div id="container" className="map" style={{ height: this.state.showDetail ? '32vh' : '60vh' }}></div>
+        <div id="container" className="map" style={{ height: '60vh' }}></div>
         {/* <Input.Search className="map-input" onSearch={(val) => this.search(val)} /> */}
-
-        {this.state.showDetail ? (
-          <Card style={{ height: 'calc(100% - 35vh)', overflowY: 'auto' }}>
+        <List
+          style={{ overflowY: 'auto', height: 'calc(100% - 62vh)' }}
+          itemLayout="horizontal"
+          dataSource={this.state.list}
+          renderItem={(item) => (
+            <List.Item
+              id={item.id}
+              style={{ cursor: 'pointer', background: item.background || '', marginLeft: 10 }}
+              extra={
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                  <div>
+                    {[...new Set(item.type.split(';'))].map((tag, index) => {
+                      return <Tag key={index}>{tag}</Tag>
+                    })}
+                  </div>
+                  <div>电话： {item.tel}</div>
+                </div>
+              }
+              onClick={() => {
+                this.select(item)
+              }}>
+              <List.Item.Meta title={<a>{item.name}</a>} description={item.address} />
+            </List.Item>
+          )}
+        />
+        <Modal
+          title="详情"
+          open={this.state.showDetail}
+          centered
+          onCancel={() => this.backList()}
+          footer={
+            <Button type="primary" onClick={() => this.backList()}>
+              关闭
+            </Button>
+          }>
+          <Card style={{border: 'none'}}>
             <div style={{ position: 'relative' }}>
               <img src="https://store.is.autonavi.com/showpic/2f22def110d066018c9386c0700e7fdf" width="100%" height={300} />
-              <Button type="primary" style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', color: '#fff', position: 'absolute', top: 20, left: 20 }} onClick={() => this.backList()}>
-                <ArrowLeftOutlined />
-                <p style={{ marginLeft: 8 }}>返回列表</p>
-              </Button>
             </div>
 
             {this.state.selectLocation && (
               <div>
                 <div style={{ fontSize: 22, fontWeight: 'bold' }}>{this.state.selectLocation.name}</div>
                 <div>
-                  <Rate allowHalf defaultValue={4.5} style={{ color: 'red' }} />
+                  <Rate allowHalf value={Number(this.state.selectLocation.rating)} style={{ color: 'red' }} />
+                  <span style={{ marginLeft: 16 }}>{this.state.selectLocation.rating}分</span>
                   <span style={{ marginLeft: 16 }}> 高档型</span>
                 </div>
 
@@ -221,33 +260,7 @@ class MapComponent extends React.Component {
               </div>
             )}
           </Card>
-        ) : (
-          <List
-            style={{ margin: '0 16px', overflowY: 'auto', height: 'calc(100% - 62vh)' }}
-            itemLayout="horizontal"
-            dataSource={this.state.list}
-            renderItem={(item) => (
-              <List.Item
-                id={item.id}
-                style={{ cursor: 'pointer', background: item.background || '' }}
-                extra={
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                    <div>
-                      {[...new Set(item.type.split(';'))].map((tag, index) => {
-                        return <Tag key={index}>{tag}</Tag>
-                      })}
-                    </div>
-                    <div>电话： {item.tel}</div>
-                  </div>
-                }
-                onClick={() => {
-                  this.select(item)
-                }}>
-                <List.Item.Meta title={<a>{item.name}</a>} description={item.address} />
-              </List.Item>
-            )}
-          />
-        )}
+        </Modal>
       </div>
     )
   }

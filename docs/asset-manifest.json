@@ -1,12 +1,12 @@
 {
   "files": {
     "main.css": "/geoGaoDe/static/css/main.d51acfa4.css",
-    "main.js": "/geoGaoDe/static/js/main.122bce18.js",
+    "main.js": "/geoGaoDe/static/js/main.3710e6cb.js",
     "static/js/27.95099497.chunk.js": "/geoGaoDe/static/js/27.95099497.chunk.js",
     "index.html": "/geoGaoDe/index.html"
   },
   "entrypoints": [
     "static/css/main.d51acfa4.css",
-    "static/js/main.122bce18.js"
+    "static/js/main.3710e6cb.js"
   ]
 }
